@@ -1,4 +1,4 @@
-"""Step 2: a simple simulated room with a heater and a basic thermostat."""
+""" a simple simulated room with a heater and a basic thermostat."""
 
 # --- Room settings (simple assumptions) ---
 OUTSIDE_TEMP = 5.0        # degrees C outside
