@@ -1,8 +1,8 @@
-""" a simple simulated room with a heater and a basic thermostat."""
+"""A simple simulated room with a heater and a thermostat."""
 
 # --- Room settings (simple assumptions) ---
 OUTSIDE_TEMP = 5.0        # degrees C outside
-HEAT_LOSS = 0.0004        # how fast the room loses heat per minute
+HEAT_LOSS = 0.001         # how fast the room loses heat per minute
 HEATER_RATE = 0.06        # degrees C gained per minute when heater is on
 HEATER_POWER_KW = 2.0     # electricity used when heater is on
 
@@ -14,10 +14,13 @@ def simulate(setpoint=21.0, hours=24, start_temp=17.0):
     history = []
 
     for minute in range(hours * 60):
-        # Basic thermostat: on below setpoint - 0.3, off above setpoint + 0.3
-        if temp < setpoint - 0.3:
+        # The setpoint can be a fixed number or a function of the minute
+        target = setpoint(minute) if callable(setpoint) else setpoint
+
+        # Basic thermostat: on below target - 0.3, off above target + 0.3
+        if temp < target - 0.3:
             heater_on = True
-        elif temp > setpoint + 0.3:
+        elif temp > target + 0.3:
             heater_on = False
 
         # Room physics
