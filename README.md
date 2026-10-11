@@ -1,7 +1,7 @@
 # llm-thermostat-demo
 
-A small prototype where a resident types a message like "I'm away until 6 pm"
-and a local language model turns it into a heating command. A safety layer
+This is a small prototype for how to control heating in the home where a resident types a message like "I'm away until 6 pm"
+and a local language model turns it into a heating command. There is also a safety layer to
 checks the command before a simulated room reacts to it.
 
 ## How it works
