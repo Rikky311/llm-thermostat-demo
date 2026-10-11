@@ -2,12 +2,11 @@
 import json
 import re
 import ollama
+from room import simulate
 
-MODEL = "llama3.2:latest"              # small model that runs free on your computer                 # small model that runs free on your computer
+MODEL = "llama3.2:latest"              # small model that runs free on your computer
 SAFE_MIN, SAFE_MAX = 16.0, 24.0        # safety limits: the heater never leaves this range
 HOME_TEMP, AWAY_TEMP = 21.0, 17.0      # default comfort and away temperatures (deg C)
-OUTSIDE, HEAT_LOSS = 5.0, 0.001        # simple room assumptions (per minute)
-HEAT_RATE, POWER_KW = 0.06, 2.0        # heater: deg C per minute, and kW used
 PREHEAT_MIN = 100                      # start warming this long before you return
 
 PROMPT = """You control a home thermostat. Reply with ONLY a JSON object:
@@ -42,20 +41,16 @@ def make_safe(cmd):
     return setpoint, away_until
 
 def energy_for_day(home_temp, away_until=None):
-    """Simulate 24 hours (one step per minute) and return the energy used in kWh."""
-    temp, heater_on, kwh = home_temp, False, 0.0
+    """Use the room simulation in room.py and return the energy used in kWh."""
     end = None
     if away_until:
         end = int(away_until[:2]) * 60 + int(away_until[3:])
-    for minute in range(24 * 60):
+
+    def target(minute):
         away = end is not None and 8 * 60 <= minute < end - PREHEAT_MIN   # away from 08:00
-        target = min(AWAY_TEMP, home_temp) if away else home_temp
-        if temp < target - 0.3:
-            heater_on = True
-        elif temp > target + 0.3:
-            heater_on = False
-        temp += HEAT_LOSS * (OUTSIDE - temp) + (HEAT_RATE if heater_on else 0)
-        kwh += POWER_KW / 60 if heater_on else 0
+        return min(AWAY_TEMP, home_temp) if away else home_temp
+
+    _, kwh = simulate(setpoint=target, start_temp=home_temp)
     return kwh
 
 if __name__ == "__main__":
